@@ -1,0 +1,78 @@
+version: '3'
+services:
+  db:
+    build:
+      context: .
+      dockerfile: ./postgresql/Dockerfile
+      args:
+        - DB_LANG=ja_JP
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=${DB_NAME}              
+      - POSTGRES_USER=${DB_USER}           
+      - POSTGRES_PASSWORD=${DB_PASS}         
+      - TZ=${TZ}       
+    volumes:
+      - /home/containers/postgresql:/var/lib/postgresql                    
+    ports:
+      - '5432:5432'
+    networks:
+      backend:
+        ipv4_address: 172.28.1.5
+        
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - '8081:8080'  
+    networks:
+      - backend
+
+  api:
+    image: node:20
+    environment:
+      - PG_SERVER=db
+      - PG_USER=${DB_USER}
+      - PG_PASSWORD=${DB_PASS}
+      - PG_DATABASE=${DB_NAME}
+      - TZ=${TZ}
+      - CHOKIDAR_USEPOLLING=true
+    tty: true
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./api:/app
+    working_dir: /app
+    command: npm run start
+    networks:
+      backend:
+        ipv4_address: 172.28.1.10
+    depends_on:
+      - db
+
+  react:
+    image: node:20
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    tty: true
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./react:/app
+    working_dir: /app
+    command: bash -c 'npm run build && npm run preview'
+    networks:
+      - backend
+    depends_on:
+      - api
+
+networks:
+  backend:
+    driver: bridge
+    name: app_network
+    ipam:
+      config:
+        - subnet: 172.28.1.0/24
+
+volumes:
+  mysql_data:
