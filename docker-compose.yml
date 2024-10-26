@@ -1,0 +1,74 @@
+version: '3'
+services:
+  db:
+    build:
+      context: .
+      dockerfile: ./postgresql/Dockerfile
+      args:
+        - DB_LANG=ja_JP
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=${DB_NAME}              
+      - POSTGRES_USER=${DB_USER}           
+      - POSTGRES_PASSWORD=${DB_PASS}         
+      - TZ=${TZ}       
+    volumes:
+      - /home/containers/postgresql:/var/lib/postgresql                    
+    ports:
+      - '5432:5432'
+    networks:
+      backend:
+        ipv4_address: 172.28.1.5
+        
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - '8081:8080'  
+    networks:
+      - backend
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    environment:
+      - PG_SERVER=db
+      - PG_USER=${DB_USER}
+      - PG_PASSWORD=${DB_PASS}
+      - PG_DATABASE=${DB_NAME}
+      - TZ=${TZ}
+      - CHOKIDAR_USEPOLLING=true
+    tty: true
+    ports:
+      - '3000:3000'
+    networks:
+      backend:
+        ipv4_address: 172.28.1.10
+    depends_on:
+      - db
+
+  react:
+  build:
+    context: ./react
+    dockerfile: Dockerfile
+  environment:
+    - CHOKIDAR_USEPOLLING=true
+  tty: true
+  ports:
+    - '8080:8080'
+  networks:
+    - backend
+  depends_on:
+    - api
+
+networks:
+  backend:
+    driver: bridge
+    name: app_network
+    ipam:
+      config:
+        - subnet: 172.28.1.0/24
+
+volumes:
+  mysql_data:
