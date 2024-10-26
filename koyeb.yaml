@@ -1,0 +1,19 @@
+services:
+  - name: api
+    source: .
+    build:
+      docker:
+        dockerfile: ./api/Dockerfile
+    run:
+      command: npm start  # API用の起動コマンド
+    env:
+      NODE_ENV: production
+  - name: react
+    source: .
+    build:
+      docker:
+        dockerfile: ./react/Dockerfile
+    run:
+      command: npm run preview  # Reactアプリ用の起動コマンド
+    env:
+      NODE_ENV: development

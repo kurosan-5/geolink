@@ -8,10 +8,10 @@ services:
         - DB_LANG=ja_JP
     container_name: postgres_db
     environment:
-      - POSTGRES_DB=${DB_NAME}              
-      - POSTGRES_USER=${DB_USER}           
-      - POSTGRES_PASSWORD=${DB_PASS}         
-      - TZ=${TZ}       
+      POSTGRES_DB: ${DB_NAME}             
+      POSTGRES_USER: ${DB_USER}           
+      POSTGRES_PASSWORD: ${DB_PASS}         
+      TZ: ${TZ}       
     volumes:
       - /home/containers/postgresql:/var/lib/postgresql                    
     ports:
@@ -33,12 +33,12 @@ services:
       context: ./api
       dockerfile: Dockerfile
     environment:
-      - PG_SERVER=db
-      - PG_USER=${DB_USER}
-      - PG_PASSWORD=${DB_PASS}
-      - PG_DATABASE=${DB_NAME}
-      - TZ=${TZ}
-      - CHOKIDAR_USEPOLLING=true
+      PG_SERVER: db
+      PG_USER: ${DB_USER}
+      PG_PASSWORD: ${DB_PASS}
+      PG_DATABASE: ${DB_NAME}
+      TZ: ${TZ}
+      CHOKIDAR_USEPOLLING: 'true' 
     tty: true
     ports:
       - '3000:3000'
@@ -49,18 +49,18 @@ services:
       - db
 
   react:
-  build:
-    context: ./react
-    dockerfile: Dockerfile
-  environment:
-    - CHOKIDAR_USEPOLLING=true
-  tty: true
-  ports:
-    - '8080:8080'
-  networks:
-    - backend
-  depends_on:
-    - api
+    build:
+      context: ./react
+      dockerfile: Dockerfile
+    environment:
+      CHOKIDAR_USEPOLLING: 'true' 
+    tty: true
+    ports:
+      - '8080:8080'
+    networks:
+      - backend
+    depends_on:
+      - api
 
 networks:
   backend:

@@ -17,7 +17,4 @@ COPY . .
 RUN npm run build
 
 # 開発サーバーを起動
-CMD ["npm", "run", "dev"]
-
-# 使用するポートを指定
-EXPOSE 8080
+CMD ["npm", "run", "preview"]
