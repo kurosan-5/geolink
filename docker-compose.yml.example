@@ -29,7 +29,9 @@ services:
       - backend
 
   api:
-    image: node:20
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     environment:
       - PG_SERVER=db
       - PG_USER=${DB_USER}
@@ -40,10 +42,6 @@ services:
     tty: true
     ports:
       - '3000:3000'
-    volumes:
-      - ./api:/app
-    working_dir: /app
-    command: npm run start
     networks:
       backend:
         ipv4_address: 172.28.1.10
@@ -51,20 +49,18 @@ services:
       - db
 
   react:
-    image: node:20
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-    tty: true
-    ports:
-      - '8080:8080'
-    volumes:
-      - ./react:/app
-    working_dir: /app
-    command: bash -c 'npm run build && npm run preview'
-    networks:
-      - backend
-    depends_on:
-      - api
+  build:
+    context: ./react
+    dockerfile: Dockerfile
+  environment:
+    - CHOKIDAR_USEPOLLING=true
+  tty: true
+  ports:
+    - '8080:8080'
+  networks:
+    - backend
+  depends_on:
+    - api
 
 networks:
   backend:
